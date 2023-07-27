@@ -74,7 +74,7 @@ end
 local tile_size = 40
 local tile_border = 3
 local tile_spacing = 50
-local cx, cy = 0, 55
+local cx, cy = 0, 0
 local font = love.graphics.setNewFont((tile_size-tile_border/2)/2)
 local function render_tile(t)
     local tile_x = t.x * tile_spacing - tile_size/2
