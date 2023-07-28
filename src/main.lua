@@ -158,3 +158,7 @@ for x=-2, 2 do
         tiles[x.." "..y] = make_tile(x, y, (x+2)%5+(y+2)*5)
     end
 end
+
+function love.load()
+    love.window.setTitle("Relocation")
+end
