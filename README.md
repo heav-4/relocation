@@ -8,6 +8,8 @@ right click and drag to pan around.
 
 esc to reset, s to scramble.
 
+1 for 3x3 selection area, 2 for 2x2 selection area (thus notated "5x5+3" and "5x5+2").
+
 ## mechanics
 
 ![25 tiles arranged in a square](readme-images/relocation.png)

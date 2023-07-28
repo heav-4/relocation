@@ -1,4 +1,5 @@
 local tiles = {}
+local sw = 3 -- selection width
 
 function HSL(h, s, l, a)
 	if s<=0 then return l,l,l,a end
@@ -15,6 +16,12 @@ function HSL(h, s, l, a)
 	end return r+m, g+m, b+m, a
 end
 
+local function n_xy(n, w, h)
+    return n%w, math.floor(n/h)
+end
+local function xy_n(x, y, w)
+    return x%w + y*w
+end
 local function get(x, y)
     return tiles[x.." "..y]
 end
@@ -24,27 +31,33 @@ local function pushoff(x, y)
     return tile.pushoff
 end
 local function move(x, y, x2, y2)
-    if get(x2, y2) then error("overlap") end
+    if get(x2, y2) then error("overlap "..x2.." "..y2) end
     tiles[x2.." "..y2] = tiles[x.." "..y]
     tiles[x.." "..y] = nil
     tiles[x2.." "..y2].x = x2
     tiles[x2.." "..y2].y = y2
 end
 local function neighborhood(x, y)
-    local i = -1
+    local list = {}
+    for i=0, sw^2-1 do
+        local lx, ly = n_xy(i, sw, sw)
+        local s = get(x+lx, y+ly)
+        table.insert(list, {x=x+lx, y=y+ly, s=s})
+    end
+    local i = 0
     return function()
         i = i + 1
-        if i > 8 then return nil end
-        return x+(i%3-1), y+math.floor(i/3)-1, get(x+(i%3-1), y+math.floor(i/3)-1)
+        if not list[i] then return nil end
+        return list[i].x, list[i].y, list[i].s
     end
 end
-local function move_3x3(x, y, x2, y2)
+local function move_block(x, y, tx, ty)
     for ix, iy, tile in neighborhood(x, y) do
-        move(ix, iy, ix + x2-x, iy + y2-y)
+        move(ix, iy, ix+(tx-x), iy+(ty-y))
         tile.pushoff = true
     end
 end
-local function valid_3x3(x, y)
+local function valid_block(x, y)
     for x, y, s in neighborhood(x, y) do
         if not s then return false end
     end
@@ -52,11 +65,11 @@ local function valid_3x3(x, y)
 end
 local function valid_destination(x, y)
     for _, _, s in neighborhood(x, y) do if s then return false end end
-    for i=-1, 1 do
-        if pushoff(x+2, y+i) then return true end
-        if pushoff(x-2, y+i) then return true end
-        if pushoff(x+i, y+2) then return true end
-        if pushoff(x+i, y-2) then return true end
+    for i=0, sw-1 do
+        if pushoff(x-1, y+i) then return true end
+        if pushoff(x+sw, y+i) then return true end
+        if pushoff(x+i, y-1) then return true end
+        if pushoff(x+i, y+sw) then return true end
     end
     return false
 end
@@ -65,12 +78,6 @@ local function tile_name(index)
     local number = (index%5)+1
     letter = ("ABCDE"):sub(letter+1, letter+1)
     return letter..number
-end
-local function n_xy(n, w, h)
-    return n%w, math.floor(n/h)
-end
-local function xy_n(x, y, w)
-    return x%w + y*w
 end
 local function make_tile(x, y, n)
     local cx, cy = n_xy(n, 5, 5)
@@ -118,13 +125,14 @@ local function render_tile_selection(x, y, x2, y2, r, g, b)
 
 end
 
-local function pos_to_tile(mx, my)
+local function pos_to_tile(mx, my, offset)
+    offset = offset or 0
     local w, h = love.graphics.getDimensions()
     mx, my = mx + tile_size/2, my + tile_size/2
     mx, my = mx + (tile_spacing-tile_size)/2, my + (tile_spacing-tile_size)/2
     mx, my = mx - (w/2-cx), my - (h/2-cy)
     mx, my = mx / tile_spacing, my / tile_spacing
-    return math.floor(mx), math.floor(my)
+    return math.floor(mx + offset), math.floor(my + offset)
 end
 
 local currently_moving = nil
@@ -135,27 +143,27 @@ function love.draw()
         render_tile(tile)
     end
     local mx, my = love.mouse.getPosition()
-    local mcx, mcy = pos_to_tile(mx, my)
-    if currently_moving == nil and valid_3x3(mcx, mcy) then
-        render_tile_selection(mcx-1, mcy-1, mcx+1, mcy+1, 0, 0.5, 1)
+    local mcx, mcy = pos_to_tile(mx, my, -(sw-1)/2)
+    if currently_moving == nil and valid_block(mcx, mcy) then
+        render_tile_selection(mcx, mcy, mcx+sw-1, mcy+sw-1, 0, 0.5, 1)
     elseif currently_moving ~= nil then
-        render_tile_selection(currently_moving[1]-1, currently_moving[2]-1, currently_moving[1]+1, currently_moving[2]+1, 0, 1, 0)
+        render_tile_selection(currently_moving[1], currently_moving[2], currently_moving[1]+sw-1, currently_moving[2]+sw-1, 0, 1, 0)
         if valid_destination(mcx, mcy) then
-            render_tile_selection(mcx-1, mcy-1, mcx+1, mcy+1, 1, 0, 1)
+            render_tile_selection(mcx, mcy, mcx+sw-1, mcy+sw-1, 1, 0, 1)
         end
     end
 end
 
 function love.mousepressed(x, y, button)
-    local tx, ty = pos_to_tile(x, y)
+    local tx, ty = pos_to_tile(x, y, -(sw-1)/2)
     if button == 1 then
-        if not currently_moving and valid_3x3(tx, ty) then
+        if not currently_moving and valid_block(tx, ty) then
             currently_moving = {tx, ty}
             for _, _, tile in neighborhood(tx, ty) do
                 tile.pushoff = false
             end
         elseif currently_moving and valid_destination(tx, ty) then
-            move_3x3(currently_moving[1], currently_moving[2], tx, ty)
+            move_block(currently_moving[1], currently_moving[2], tx, ty)
             currently_moving = nil
         end
     end
@@ -201,6 +209,12 @@ function love.keypressed(key)
     elseif key == "s" then
         currently_moving = nil
         scramble()
+    elseif key == "1" then
+        sw = 3
+        init()
+    elseif key == "2" then
+        sw = 2
+        init()
     end
 end
 
