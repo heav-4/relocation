@@ -163,10 +163,29 @@ local function init()
 end
 init()
 
+local function scramble() -- proven always possible to solve by Milo Jacquet.
+    tiles = {}
+    local indices = {}
+    for x=-2, 2 do
+        for y=-2, 2 do
+            table.insert(indices, {x, y})
+        end
+    end
+    for i=1, 25 do
+        local index = math.random(1, #indices)
+        local coords = indices[index]
+        table.remove(indices, index)
+        tiles[coords[1].." "..coords[2]] = make_tile(coords[1], coords[2], index)
+    end
+end
+
 function love.keypressed(key)
     if key == "escape" then
         currently_moving = nil
         init()
+    elseif key == "s" then
+        currently_moving = nil
+        scramble()
     end
 end
 

@@ -6,6 +6,8 @@ left click on the center of a 3x3 area to start moving it. left click again at t
 
 right click and drag to pan around.
 
+esc to reset, s to scramble.
+
 ## mechanics
 
 ![25 tiles arranged in a square](readme-images/relocation.png)
