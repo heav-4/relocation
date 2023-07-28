@@ -153,9 +153,20 @@ function love.mousemoved(x, y, dx, dy)
     end
 end
 
-for x=-2, 2 do
-    for y=-2, 2 do
-        tiles[x.." "..y] = make_tile(x, y, (x+2)%5+(y+2)*5)
+local function init()
+    tiles = {}
+    for x=-2, 2 do
+        for y=-2, 2 do
+            tiles[x.." "..y] = make_tile(x, y, (x+2)%5+(y+2)*5)
+        end
+    end
+end
+init()
+
+function love.keypressed(key)
+    if key == "escape" then
+        currently_moving = nil
+        init()
     end
 end
 
