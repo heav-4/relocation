@@ -66,9 +66,24 @@ local function tile_name(index)
     letter = ("ABCDE"):sub(letter+1, letter+1)
     return letter..number
 end
+local function n_xy(n, w, h)
+    return n%w, math.floor(n/h)
+end
+local function xy_n(x, y, w)
+    return x%w + y*w
+end
 local function make_tile(x, y, n)
-    local r, g, b = HSL((x+2)/5, 1, 0.5 + (y+3)/13)
+    local cx, cy = n_xy(n, 5, 5)
+    local r, g, b = HSL((cx)/5, 1, 0.5 + (cy+1)/13)
     return {x=x, y=y, n=n, text=tile_name(n), pushoff = true, r=r, g=g, b=b}
+end
+local function indexed_tile(n)
+    local x, y = n_xy(n, 5, 5)
+    return make_tile(x, y, n)
+end
+local function positioned_tile(x, y)
+    local n = xy_n(x-2, y-2, 5)
+    return make_tile(x, y, n)
 end
 
 local tile_size = 40
@@ -166,16 +181,16 @@ init()
 local function scramble() -- proven always possible to solve by Milo Jacquet.
     tiles = {}
     local indices = {}
+    for i=0, 24 do
+        table.insert(indices, i)
+    end
     for x=-2, 2 do
         for y=-2, 2 do
-            table.insert(indices, {x, y})
+            local index = math.random(1, #indices)
+            local n = indices[index]
+            table.remove(indices, index)
+            tiles[x.." "..y] = make_tile(x, y, n)
         end
-    end
-    for i=1, 25 do
-        local index = math.random(1, #indices)
-        local coords = indices[index]
-        table.remove(indices, index)
-        tiles[coords[1].." "..coords[2]] = make_tile(coords[1], coords[2], index)
     end
 end
 
