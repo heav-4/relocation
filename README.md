@@ -57,7 +57,7 @@ an appimage will be available if enough people complain at me about the lack of 
 ## to-do list
 
 ### high-priority
-* undo, redo.
+* ~~undo, redo.~~ implemented in the main branch; pending release.
 * zoom in/out.
 * implement provably possible scrambling.
 * more visible status things (UI is hard).
