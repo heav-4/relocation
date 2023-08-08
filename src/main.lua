@@ -186,7 +186,7 @@ local function init()
 end
 init()
 
-local function scramble() -- proven always possible to solve by Milo Jacquet.
+local function scramble() -- NOT proven always possible to solve, oh no.
     tiles = {}
     local indices = {}
     for i=0, 24 do
