@@ -2,13 +2,22 @@
 2d puzzle involving moving groups of tiles around under a certain ruleset.
 
 ## controls
+
+### basic
 left click on the center of a 3x3 area to start moving it. left click again at the center of the destination.
 
 right click and drag to pan around.
 
-esc to reset, s to scramble.
+### board manipulation
+esc to reset.
 
-1 for 3x3 selection area, 2 for 2x2 selection area (thus notated "5x5+3" and "5x5+2").
+1 for 5x5 grid and 3x3 selection area, 2 for 5x5 grid and 2x2 selection area (thus notated "5x5+3" and "5x5+2").
+
+w and shift+w to increase and decrease width respectively. 
+
+h and shift+h to increase and decrease height respectively.
+
+s and shift+s to increase and decrease selection box size respectively.
 
 ## mechanics
 
@@ -40,3 +49,31 @@ i honestly have no idea. you're on your own.
 download love2d for your system via a package manager or what have you. then, use it to run either the .love file from releases, or the directory containing main.lua if you just clone the repository.
 
 an appimage will be available if enough people complain at me about the lack of it.
+
+## to-do list
+
+### high-priority
+* undo, redo.
+* zoom in/out.
+* implement provably possible scrambling.
+* more visible status things (UI is hard).
+* even selection box sizes make the placement preview look uncomfortably misaligned, but i haven't figured out a good solution to this yet.
+
+### medium priority
+
+* saving and loading puzzle states.
+* generally logging puzzle actions.
+* some sort of notation for puzzle actions.
+* in-application documentation.
+
+### low priority
+* cooler visual effects, possibly shader-involving.
+* more visual customization in general.
+* sound effects.
+* accessibility and keyboard-based controls.
+* different rulesets and shapes and such.
+
+### way too ambitious to be in low priority
+
+* in-application screenshot taking.
+* in-application video recording, even?
