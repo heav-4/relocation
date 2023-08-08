@@ -15,6 +15,16 @@ function love.draw()
     gfx.draw(world)
 end
 
+local function cancel_move()
+    if world.currently_moving then
+        for _, _, tile in world:neighborhood(world.currently_moving[1], world.currently_moving[2]) do
+            tile.pushoff = true
+        end
+    end
+    world.currently_moving = nil
+    world.valid_moves = nil
+end
+
 function love.mousepressed(x, y, button)
     local tx, ty = gfx.pos_to_tile(x, y, -(world.sw-1)/2)
     if button == 1 then
@@ -25,9 +35,13 @@ function love.mousepressed(x, y, button)
             end
             world.valid_moves = world:enumerate_valid_moves()
         elseif world.currently_moving and world:valid_destination(tx, ty) then
+            if tx ~= world.currently_moving[1] or ty ~= world.currently_moving[2] then
+                table.insert(world.history, {world.currently_moving[1], world.currently_moving[2], tx, ty})
+            end
             world:move_block(world.currently_moving[1], world.currently_moving[2], tx, ty)
             world.currently_moving = nil
             world.valid_moves = nil
+            world.future = {}
         end
     end
 end
@@ -60,6 +74,25 @@ local function generic_switch(nsw, nw, nh, text)
     end
 end
 
+local function undo()
+    if #world.history == 0 then return gfx.text("Nothing to undo") end
+    cancel_move()
+    local move = world.history[#world.history]
+    world:move_block(move[3], move[4], move[1], move[2])
+    table.insert(world.future, move)
+    table.remove(world.history, #world.history)
+    gfx.text("Move undone")
+end
+local function redo()
+    if #world.future == 0 then return gfx.text("Nothing to redo") end
+    cancel_move()
+    local move = world.future[#world.future]
+    world:move_block(move[1], move[2], move[3], move[4])
+    table.insert(world.history, move)
+    table.remove(world.future, #world.future)
+    gfx.text("Move redone")
+end
+
 function love.keypressed(key)
     if key == "escape" then
         init(sw, w, h, "Board reset")
@@ -85,6 +118,10 @@ function love.keypressed(key)
         generic_switch(sw+1, w, h, "Selection box is now size "..sw+1)
     elseif key == "s" and love.keyboard.isDown("lshift") then
         generic_switch(sw-1, w, h, "Selection box is now size "..sw-1)
+    elseif key == "z" and love.keyboard.isDown("lctrl") then
+        if love.keyboard.isDown("lshift") then redo() else undo() end
+    elseif key == "y" and love.keyboard.isDown("lctrl") then
+        redo()
     end
 end
 

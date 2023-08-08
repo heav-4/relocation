@@ -13,3 +13,7 @@
     + you can fully change the board size and such.
     : major overhaul to the code structure.
     - removed scrambling. it wasn't actually provably possible.
+
+main branch (not released)
+--------------------------
+    + undo and redo.

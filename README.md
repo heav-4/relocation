@@ -8,6 +8,10 @@ left click on the center of a 3x3 area to start moving it. left click again at t
 
 right click and drag to pan around.
 
+ctrl+z to undo.
+
+ctrl+shift+z or ctrl+y to redo.
+
 ### board manipulation
 esc to reset.
 

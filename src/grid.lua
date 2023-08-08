@@ -7,6 +7,8 @@ function M.new(selection_width)
     setmetatable(new, M)
     new.tiles = {}
     new.sw = selection_width or 3
+    new.history = {}
+    new.future = {}
     return new
 end
 
