@@ -1,0 +1,47 @@
+some files
+----------
+    archive.lua:
+        this is not used. do not use it.
+        it is where i put code that i want to reference later but i do not want to use in the program.
+        the goal is to not clutter the main thing with comments. you do not need to look here.
+
+    conf.lua:
+        required love2d thing for setting window settings and such.
+
+    main.lua:
+        uncategorized code, and also love.draw and such are contained here. brings everything together, more generally.
+        it handles input and related actions right now too. this may change.
+
+    gfx.lua:
+        module for rendering things, generally speaking. things from it should be called from main.lua primarily.
+        it also contains helper functions relating to e.g converting screen positions to/from tile positions.
+
+    grid.lua:
+        module that defines the grid, and relevant helper functions.
+---------------------------------
+some decisions you might question
+---------------------------------
+    things like this (look to grid.lua, for instance):
+
+        local M = {}
+        M.__index = M
+
+        function M.new()
+            local new = {}
+            setmetatable(new, M)
+            return new
+        end
+
+        function M:method(whatever)
+            return stuff
+        end
+    
+    the reason i am doing this is such that you can do things like:
+
+        local module = require("the thing")
+        local thing = module.new()
+        thing:stuff(33295082395)
+    
+    hopefully that explains that.
+
+    you might also wonder why everything is so bad and awful. that's because i wrote it.
