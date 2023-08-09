@@ -60,7 +60,7 @@ an appimage will be available if enough people complain at me about the lack of 
 
 ### high-priority
 * ~~undo, redo.~~ implemented in v1.4.0.
-* zoom in/out.
+* ~~zoom in/out.~~ implemented in v1.5.0.
 * implement provably possible scrambling.
 * more visible status things (UI is hard).
 * even selection box sizes make the placement preview look uncomfortably misaligned, but i haven't figured out a good solution to this yet.
