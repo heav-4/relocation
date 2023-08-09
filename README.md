@@ -71,6 +71,7 @@ an appimage will be available if enough people complain at me about the lack of 
 * generally logging puzzle actions.
 * some sort of notation for puzzle actions.
 * in-application documentation.
+* touch support, especially pinching to zoom.
 
 ### low priority
 * cooler visual effects, possibly shader-involving.
