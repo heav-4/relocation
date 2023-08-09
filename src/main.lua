@@ -42,15 +42,29 @@ function love.mousepressed(x, y, button)
             world.currently_moving = nil
             world.valid_moves = nil
             world.future = {}
+        elseif world.currently_moving and world:can_swap(world.currently_moving[1], world.currently_moving[2], tx, ty) then
+            table.insert(world.history, {world.currently_moving[1], world.currently_moving[2], tx, ty, swap=true})
+            world:swap(world.currently_moving[1], world.currently_moving[2], tx, ty)
+            cancel_move()
+        elseif world.currently_moving and world.currently_moving[1] == tx and world.currently_moving[2] == ty then
+            cancel_move()
         end
     end
 end
 
 function love.mousemoved(x, y, dx, dy)
+    x, y = gfx.board_space(x, y)
+    dx, dy = dx/gfx.zoom, dy/gfx.zoom
+    gfx.zx = x
+    gfx.zy = y
     if love.mouse.isDown(2) then
         gfx.cx = gfx.cx - dx
         gfx.cy = gfx.cy - dy
     end
+end
+
+function love.wheelmoved(x, y)
+    gfx.wheelpos = math.min(5,math.max(-10, gfx.wheelpos + y))
 end
 
 local sw, w, h = 3, 5, 5
@@ -78,7 +92,11 @@ local function undo()
     if #world.history == 0 then return gfx.text("Nothing to undo") end
     cancel_move()
     local move = world.history[#world.history]
-    world:move_block(move[3], move[4], move[1], move[2])
+    if not move.swap then 
+        world:move_block(move[3], move[4], move[1], move[2])
+    else
+        world:swap(move[3], move[4], move[1], move[2])
+    end
     table.insert(world.future, move)
     table.remove(world.history, #world.history)
     gfx.text("Move undone")
@@ -87,7 +105,11 @@ local function redo()
     if #world.future == 0 then return gfx.text("Nothing to redo") end
     cancel_move()
     local move = world.future[#world.future]
-    world:move_block(move[1], move[2], move[3], move[4])
+    if not move.swap then 
+        world:move_block(move[1], move[2], move[3], move[4])
+    else
+        world:swap(move[3], move[4], move[1], move[2])
+    end
     table.insert(world.history, move)
     table.remove(world.future, #world.future)
     gfx.text("Move redone")
@@ -122,7 +144,8 @@ function love.keypressed(key)
         if love.keyboard.isDown("lshift") then redo() else undo() end
     elseif key == "y" and love.keyboard.isDown("lctrl") then
         redo()
-    end
+    elseif key == "right" then gfx.cx = gfx.cx + 50
+    elseif key == "left" then gfx.cx = gfx.cx - 50 end
 end
 
 init(sw, w, h, "Welcome to Relocation")

@@ -79,6 +79,16 @@ function M:move_block(x, y, tx, ty)
     end
 end
 
+function M:swap(x, y, tx, ty)
+    self:move_block(x, y, 10000, 10000)
+    self:move_block(tx, ty, x, y)
+    self:move_block(10000, 10000, tx, ty)
+end
+
+function M:can_swap(x, y, tx, ty)
+    return self:valid_destination(x, y, true) and self:valid_destination(tx, ty, true, true)
+end
+
 function M:valid_block(x, y) -- if it's filled.
     for x, y, s in self:neighborhood(x, y) do
         if not s then return false end
@@ -88,8 +98,18 @@ end
 
 -- checks if there's a tile adjacent to the sw x sw square
 -- formed with pushoff == true.
-function M:valid_destination(x, y)
-    for _, _, s in self:neighborhood(x, y) do if s and s.pushoff then return false end end
+function M:valid_destination(x, y, clipping, no_pushoff)
+    if not clipping then
+        for _, _, s in self:neighborhood(x, y) do if s and s.pushoff then return false end end
+    else
+        for _, _, s in self:neighborhood(x, y) do
+            if no_pushoff then
+                if not s or not s.pushoff then return false end
+            else
+                if not s then return false end
+            end
+        end
+    end
     for i=0, self.sw-1 do
         if self:pushoff(x-1, y+i) then return true end
         if self:pushoff(x+self.sw, y+i) then return true end

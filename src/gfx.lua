@@ -14,21 +14,44 @@ function M.HSL(h, s, l, a) -- not mine.
 	else              r,g,b = c,0,x
 	end return r+m, g+m, b+m, a
 end
-
-M.tile_size = 40
-M.tile_border = 3
-M.tile_spacing = 50
+M.visual_tile_spacing = 100
+M.tile_size = 4/5
+M.tile_border = 3/50
+M.tile_spacing = 1
 M.cx, M.cy = 0, 0
-M.font = love.graphics.setNewFont((M.tile_size-M.tile_border/2)/2)
+M.zoom = M.visual_tile_spacing
+M.zx = 0
+M.zy = 0
+M.vwheelpos = (math.log(M.zoom)/math.log(2))*5
+M.wheelpos = 0
+M.wheelpos_offset = (math.log(M.zoom)/math.log(2))*5
+local font_size = (M.tile_size-M.tile_border/2)/2*M.visual_tile_spacing
+M.font = love.graphics.setNewFont(font_size)
 
 function M.pos_to_tile(mx, my, offset)
     offset = offset or 0
-    local w, h = love.graphics.getDimensions()
+    mx, my = M.board_space(mx, my)
     mx, my = mx + M.tile_size/2, my + M.tile_size/2
     mx, my = mx + (M.tile_spacing-M.tile_size)/2, my + (M.tile_spacing-M.tile_size)/2
-    mx, my = mx - (w/2-M.cx), my - (h/2-M.cy)
     mx, my = mx / M.tile_spacing, my / M.tile_spacing
     return math.floor(mx + offset), math.floor(my + offset)
+end
+
+local function camera_transform()
+    local w, h = love.graphics.getDimensions()
+    local trans = love.math.newTransform()
+    trans:translate(w/2, h/2)
+    trans:scale(M.zoom)
+    trans:translate(-M.cx, -M.cy)
+    return trans
+end
+function M.screen_space(bx, by)
+    local trans = camera_transform()
+    return trans:transformPoint(sx, sy)
+end
+function M.board_space(sx, sy)
+    local trans = camera_transform()
+    return trans:inverseTransformPoint(sx, sy)
 end
 
 local function tile_pos(x, y)
@@ -38,33 +61,6 @@ end
 local function tile_pos_center(x, y)
     local tx, ty = tile_pos(x, y)
     return tx + M.tile_size / 2, ty + M.tile_size/2
-end
-
-local function render_tile(t)
-    local tile_x = t.x * M.tile_spacing - M.tile_size/2
-    local tile_y = t.y * M.tile_spacing - M.tile_size/2
-    local tile_mx = tile_x + M.tile_size
-    local tile_my = tile_y + M.tile_size
-    love.graphics.setColor(t.r, t.g, t.b)
-    love.graphics.rectangle("fill", tile_x, tile_y, M.tile_size, M.tile_size)
-    love.graphics.setColor(0, 0, 0)
-    local text_x = tile_x
-    local text_y = tile_y + M.tile_size/2 - M.font:getHeight()/2
-    love.graphics.printf(t.text, text_x, text_y, M.tile_size, "center")
-    love.graphics.setColor(0.5, 0.5, 0.5)
-    love.graphics.setLineWidth(M.tile_border)
-    love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
-end
-
-local function render_tile_selection(x, y, x2, y2, r, g, b, a)
-    a = a or 1
-    local tile_x = x * M.tile_spacing - M.tile_size/2 - M.tile_border
-    local tile_y = y * M.tile_spacing - M.tile_size/2 - M.tile_border
-    local tile_mx = tile_x + M.tile_spacing*(x2-x) + M.tile_size + M.tile_border*2
-    local tile_my = tile_y + M.tile_spacing*(y2-y) + M.tile_size + M.tile_border*2
-    love.graphics.setColor(r, g, b, a)
-    love.graphics.setLineWidth(M.tile_border)
-    love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
 end
 
 local top_text = ""
@@ -88,15 +84,55 @@ function M.text(text)
     top_time = 240
     top_burst = 10
 end
+
+local function render_tile(t)
+    local tile_x = t.x * M.tile_spacing - M.tile_size/2
+    local tile_y = t.y * M.tile_spacing - M.tile_size/2
+    local tile_mx = tile_x + M.tile_size
+    local tile_my = tile_y + M.tile_size
+    love.graphics.setColor(t.r, t.g, t.b)
+    love.graphics.rectangle("fill", tile_x, tile_y, M.tile_size, M.tile_size)
+    love.graphics.setColor(0, 0, 0)
+    local text_x = tile_x
+    local text_y = tile_y + M.tile_size/2 - M.font:getHeight()/M.visual_tile_spacing/2
+    love.graphics.printf(t.text, text_x, text_y, M.tile_size*M.visual_tile_spacing, "center", 0, 1/M.visual_tile_spacing)
+    love.graphics.setColor(0.5, 0.5, 0.5)
+    love.graphics.setLineWidth(M.tile_border)
+    love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
+end
+
+local function render_tile_selection(x, y, x2, y2, r, g, b, a)
+    a = a or 1
+    local tile_x = x * M.tile_spacing - M.tile_size/2 - M.tile_border
+    local tile_y = y * M.tile_spacing - M.tile_size/2 - M.tile_border
+    local tile_mx = tile_x + M.tile_spacing*(x2-x) + M.tile_size + M.tile_border*2
+    local tile_my = tile_y + M.tile_spacing*(y2-y) + M.tile_size + M.tile_border*2
+    love.graphics.setColor(r, g, b, a)
+    love.graphics.setLineWidth(M.tile_border)
+    love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
+end
+
 local frames = 0
 
 function M.draw(world)
+    local w, h = love.graphics.getDimensions()
     frames = frames + 1
+    M.vwheelpos = M.vwheelpos - (M.vwheelpos-M.wheelpos-M.wheelpos_offset)/5
+    do -- zoom stuff
+        local new_zoom = 2^(M.vwheelpos/5)
+        local zoom_factor = new_zoom/M.zoom
+        local trans = love.math.newTransform()
+        trans:translate(M.zx, M.zy)
+        trans:scale(zoom_factor)
+        trans:translate(-M.zx, -M.zy)
+        M.cx, M.cy = trans:inverseTransformPoint(M.cx, M.cy)
+        M.zoom = new_zoom
+    end
     if top_time > 0 then top_time = top_time - 1 end
     if top_burst > 0 then top_burst = top_burst - 1 end
     local flash_sine = (math.sin(math.pi*4*frames/60)/4)+3/4
-    local w, h = love.graphics.getDimensions()
-    love.graphics.translate(w/2-M.cx, h/2-M.cy)
+    love.graphics.push()
+    love.graphics.applyTransform(camera_transform())
     for _, tile in pairs(world.tiles) do
         render_tile(tile)
     end
@@ -109,6 +145,8 @@ function M.draw(world)
         render_tile_selection(world.currently_moving[1], world.currently_moving[2], world.currently_moving[1]+sw-1, world.currently_moving[2]+sw-1, 0, 1, 0)
         if world:valid_destination(mcx, mcy) then
             render_tile_selection(mcx, mcy, mcx+sw-1, mcy+sw-1, 1, 0, 1)
+        elseif world:can_swap(world.currently_moving[1], world.currently_moving[2], mcx, mcy) then
+            render_tile_selection(mcx, mcy, mcx+sw-1, mcy+sw-1, 1, 1, 1-flash_sine)
         end
     end
     if world.valid_moves then
@@ -119,7 +157,7 @@ function M.draw(world)
             render_tile_selection(v[1]+voffset, v[2]+voffset, v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
         end
     end
-    love.graphics.translate(-w/2+M.cx, -h/2+M.cy)
+    love.graphics.pop()
     draw_top_text()
 end
 

@@ -6,6 +6,8 @@
 ### basic
 left click on the center of a 3x3 area to start moving it. left click again at the center of the destination.
 
+if both squares are "stable" (connected to other pieces), you can swap them by clicking on both.
+
 right click and drag to pan around.
 
 ctrl+z to undo.
