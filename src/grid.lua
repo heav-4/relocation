@@ -132,7 +132,7 @@ local tile_alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 function M:init(w, h)
     for y=0, h-1 do
         for x=0, w-1 do
-            local tilename = tile_alphabet:sub(y+1, y+1)..tostring(x+1)
+            local tilename = tile_alphabet:sub(x+1, x+1)..tostring(y+1)
             local cx, cy = x-math.floor(w/2), y-math.floor(h/2)
             local h, s, l = (x)/w, 1, 0.5 + (y+1)/(h*13/5)
             local r, g, b = gfx.HSL(h, s, l)
