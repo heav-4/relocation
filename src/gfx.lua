@@ -28,6 +28,8 @@ M.wheelpos_offset = (math.log(M.zoom)/math.log(2))*5
 local font_size = (M.tile_size-M.tile_border/2)/2*M.visual_tile_spacing
 M.font = love.graphics.setNewFont(font_size)
 
+M.grid = true
+
 function M.pos_to_tile(mx, my, offset)
     offset = offset or 0
     mx, my = M.board_space(mx, my)
@@ -112,8 +114,21 @@ local function render_tile_selection(x, y, x2, y2, r, g, b, a)
     love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
 end
 
-local frames = 0
+local function render_grid()
+    local w, h = love.graphics.getDimensions()
+    local left, top = M.board_space(0, 0)
+    local right, bottom = M.board_space(w, h)
+    love.graphics.setLineWidth(1/M.zoom)
+    love.graphics.setColor(0.2, 0.2, 0.2)
+    for x=math.floor(left), math.ceil(right) do
+        love.graphics.line(x-.5, top-.5, x-.5, bottom+.5)
+    end
+    for y=math.floor(top), math.ceil(bottom) do
+        love.graphics.line(left-.5, y-.5, right+.5, y-.5)
+    end
+end 
 
+local frames = 0
 function M.draw(world)
     local w, h = love.graphics.getDimensions()
     frames = frames + 1
@@ -133,6 +148,7 @@ function M.draw(world)
     local flash_sine = (math.sin(math.pi*4*frames/60)/4)+3/4
     love.graphics.push()
     love.graphics.applyTransform(camera_transform())
+    if M.grid then render_grid() end
     for _, tile in pairs(world.tiles) do
         render_tile(tile)
     end

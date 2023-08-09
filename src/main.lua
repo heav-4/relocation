@@ -145,7 +145,16 @@ function love.keypressed(key)
     elseif key == "y" and love.keyboard.isDown("lctrl") then
         redo()
     elseif key == "right" then gfx.cx = gfx.cx + 50
-    elseif key == "left" then gfx.cx = gfx.cx - 50 end
+    elseif key == "left" then gfx.cx = gfx.cx - 50
+    elseif key == "g" then
+        if gfx.grid then
+            gfx.text("Grid disabled")
+            gfx.grid = false
+        else
+            gfx.text("Grid enabled")
+            gfx.grid = true
+        end
+    end
 end
 
 init(sw, w, h, "Welcome to Relocation")
