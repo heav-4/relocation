@@ -31,4 +31,5 @@
 unreleased
 ----------
     + even parity selection size piece previews are now + shaped.
+    + there are sound effects now.
     : fixed the issue in which even parity selection size piece previews didn't flash in some cases. 

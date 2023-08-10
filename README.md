@@ -80,7 +80,7 @@ an appimage will be available if enough people complain at me about the lack of 
 ### low priority
 * cooler visual effects, possibly shader-involving.
 * more visual customization in general.
-* sound effects.
+* ~~sound effects.~~ implemented, not released.
 * accessibility and keyboard-based controls.
 * different rulesets and shapes and such.
 
