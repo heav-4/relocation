@@ -18,6 +18,9 @@ some files
 
     grid.lua:
         module that defines the grid, and relevant helper functions.
+
+    sfx.lua:
+        sound effect handling. though other things are responsible for calling it as of now.
 ---------------------------------
 some decisions you might question
 ---------------------------------

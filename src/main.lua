@@ -1,5 +1,6 @@
 local grid = require("grid")
 local gfx = require("gfx")
+local sfx = require("sfx")
 
 local world
 local mode_name = "None"
@@ -29,6 +30,7 @@ function love.mousepressed(x, y, button)
     local tx, ty = gfx.pos_to_tile(x, y, -(world.sw-1)/2)
     if button == 1 then
         if not world.currently_moving and world:valid_block(tx, ty) then
+            sfx.play("select")
             world.currently_moving = {tx, ty}
             for _, _, tile in world:neighborhood(tx, ty) do
                 tile.pushoff = false
@@ -37,6 +39,7 @@ function love.mousepressed(x, y, button)
         elseif world.currently_moving and world:valid_destination(tx, ty) then
             if tx ~= world.currently_moving[1] or ty ~= world.currently_moving[2] then
                 table.insert(world.history, {world.currently_moving[1], world.currently_moving[2], tx, ty})
+                sfx.play("place")
             end
             world:move_block(world.currently_moving[1], world.currently_moving[2], tx, ty)
             world.currently_moving = nil
@@ -45,6 +48,7 @@ function love.mousepressed(x, y, button)
         elseif world.currently_moving and world:can_swap(world.currently_moving[1], world.currently_moving[2], tx, ty) then
             table.insert(world.history, {world.currently_moving[1], world.currently_moving[2], tx, ty, swap=true})
             world:swap(world.currently_moving[1], world.currently_moving[2], tx, ty)
+            sfx.play("swap")
             cancel_move()
         elseif world.currently_moving and world.currently_moving[1] == tx and world.currently_moving[2] == ty then
             cancel_move()
@@ -99,6 +103,7 @@ local function undo()
     end
     table.insert(world.future, move)
     table.remove(world.history, #world.history)
+    sfx.play("undo", 0.5)
     gfx.text("Move undone")
 end
 local function redo()
@@ -107,8 +112,10 @@ local function redo()
     local move = world.future[#world.future]
     if not move.swap then 
         world:move_block(move[1], move[2], move[3], move[4])
+        sfx.play("place")
     else
         world:swap(move[3], move[4], move[1], move[2])
+        sfx.play("swap")
     end
     table.insert(world.history, move)
     table.remove(world.future, #world.future)
@@ -157,4 +164,6 @@ function love.keypressed(key)
     end
 end
 
+gfx.text("Loading audio...")
+sfx.load_sources()
 init(sw, w, h, "Welcome to Relocation")
