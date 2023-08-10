@@ -30,6 +30,8 @@ M.font = love.graphics.setNewFont(font_size)
 
 M.grid = true
 
+local flash_sine = 0
+
 function M.pos_to_tile(mx, my, offset)
     offset = offset or 0
     mx, my = M.board_space(mx, my)
@@ -71,6 +73,8 @@ local top_font = love.graphics.newFont(30)
 local top_burst = 0
 
 local function draw_top_text()
+    if top_time > 0 then top_time = top_time - 1 end
+    if top_burst > 0 then top_burst = top_burst - 1 end
     local w, h = love.graphics.getDimensions()
     local text_y = 100
     local text_alpha = (top_time>140 and 0.8+(0.2-top_burst/50) or top_time/140)
@@ -128,30 +132,21 @@ local function render_grid()
     end
 end 
 
-local frames = 0
-function M.draw(world)
-    local w, h = love.graphics.getDimensions()
-    frames = frames + 1
+-- i want to zoom in to the cursor specifically, not the center of the screen.
+-- this does that.
+local function zoom_camera_drift()
     M.vwheelpos = M.vwheelpos - (M.vwheelpos-M.wheelpos-M.wheelpos_offset)/5
-    do -- zoom stuff
-        local new_zoom = 2^(M.vwheelpos/5)
-        local zoom_factor = new_zoom/M.zoom
-        local trans = love.math.newTransform()
-        trans:translate(M.zx, M.zy)
-        trans:scale(zoom_factor)
-        trans:translate(-M.zx, -M.zy)
-        M.cx, M.cy = trans:inverseTransformPoint(M.cx, M.cy)
-        M.zoom = new_zoom
-    end
-    if top_time > 0 then top_time = top_time - 1 end
-    if top_burst > 0 then top_burst = top_burst - 1 end
-    local flash_sine = (math.sin(math.pi*4*frames/60)/4)+3/4
-    love.graphics.push()
-    love.graphics.applyTransform(camera_transform())
-    if M.grid then render_grid() end
-    for _, tile in pairs(world.tiles) do
-        render_tile(tile)
-    end
+    local new_zoom = 2^(M.vwheelpos/5)
+    local zoom_factor = new_zoom/M.zoom
+    local trans = love.math.newTransform()
+    trans:translate(M.zx, M.zy)
+    trans:scale(zoom_factor)
+    trans:translate(-M.zx, -M.zy)
+    M.cx, M.cy = trans:inverseTransformPoint(M.cx, M.cy)
+    M.zoom = new_zoom
+end
+
+local function render_tile_preview(world)
     local mx, my = love.mouse.getPosition()
     local sw = world.sw
     local mcx, mcy = M.pos_to_tile(mx, my, -(sw-1)/2)
@@ -165,14 +160,31 @@ function M.draw(world)
             render_tile_selection(mcx, mcy, mcx+sw-1, mcy+sw-1, 1, 1, 1-flash_sine)
         end
     end
-    if world.valid_moves then
-        local offset = math.floor(world.sw/2)
-        local voffset = (world.sw-1)/2
-        for _, v in ipairs(world.valid_moves) do
-            local occupied = (world:get(v[1]+offset, v[2]+offset) ~= nil)
-            render_tile_selection(v[1]+voffset, v[2]+voffset, v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
-        end
+end
+
+local function render_valid_moves(world)
+    local offset = math.floor(world.sw/2)
+    local voffset = (world.sw-1)/2
+    for _, v in ipairs(world.valid_moves) do
+        local occupied = (world:get(v[1]+offset, v[2]+offset) ~= nil)
+        render_tile_selection(v[1]+voffset, v[2]+voffset, v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
     end
+end
+
+local frames = 0
+function M.draw(world)
+    local w, h = love.graphics.getDimensions()
+    frames = frames + 1
+    flash_sine = (math.sin(math.pi*4*frames/60)/4)+3/4
+    zoom_camera_drift()
+    love.graphics.push()
+    love.graphics.applyTransform(camera_transform())
+    if M.grid then render_grid() end
+    for _, tile in pairs(world.tiles) do
+        render_tile(tile)
+    end
+    render_tile_preview(world)
+    if world.valid_moves then render_valid_moves(world) end
     love.graphics.pop()
     draw_top_text()
 end
