@@ -118,6 +118,17 @@ local function render_tile_selection(x, y, x2, y2, r, g, b, a)
     love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
 end
 
+local function render_plus(x, y, r, g, b, a)
+    a = a or 1
+    local tile_x = x * M.tile_spacing
+    local tile_y = y * M.tile_spacing
+    local plus_size = M.tile_spacing*3/4
+    love.graphics.setColor(r, g, b, a)
+    love.graphics.setLineWidth(M.tile_border)
+    love.graphics.line(tile_x, tile_y + plus_size/2, tile_x, tile_y - plus_size/2)
+    love.graphics.line(tile_x + plus_size/2, tile_y, tile_x - plus_size/2, tile_y)
+end
+
 local function render_grid()
     local w, h = love.graphics.getDimensions()
     local left, top = M.board_space(0, 0)
@@ -166,8 +177,21 @@ local function render_valid_moves(world)
     local offset = math.floor(world.sw/2)
     local voffset = (world.sw-1)/2
     for _, v in ipairs(world.valid_moves) do
-        local occupied = (world:get(v[1]+offset, v[2]+offset) ~= nil)
-        render_tile_selection(v[1]+voffset, v[2]+voffset, v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
+        local occupied = false
+        if world.sw % 2 == 0 then
+            for xo = -1, 0 do
+                for yo = -1, 0 do
+                    if world:get(v[1]+offset+xo, v[2]+offset+yo) ~= nil then
+                        occupied = true
+                        break
+                    end
+                end
+            end
+            render_plus(v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
+        else
+            occupied = (world:get(v[1]+offset, v[2]+offset) ~= nil)
+            render_tile_selection(v[1]+voffset, v[2]+voffset, v[1]+voffset, v[2]+voffset, 1, 1, 1, occupied and flash_sine/1.5 or 0.2)
+        end
     end
 end
 
