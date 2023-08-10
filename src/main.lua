@@ -161,6 +161,14 @@ function love.keypressed(key)
             gfx.text("Grid enabled")
             gfx.grid = true
         end
+    elseif key == "m" then
+        if sfx.mute then
+            gfx.text("Disabled silence")
+            sfx.mute = false
+        else
+            gfx.text("Disabled sound effects")
+            sfx.mute = true
+        end
     end
 end
 

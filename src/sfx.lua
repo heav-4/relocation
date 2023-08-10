@@ -2,6 +2,7 @@ local M = {}
 local sources = {}
 
 love.audio.setVolume(0.5)
+M.mute = false
 
 function M.load_sources()
     local files = love.filesystem.getDirectoryItems("sound files")
@@ -17,6 +18,7 @@ function M.load_sources()
 end
 
 function M.play(sourcename, volume)
+    if M.mute then return end
     volume = volume or 1
     if not sources[sourcename] then error("missing a sound file: "..sourcename) end
     for i, v in ipairs(sources[sourcename]) do

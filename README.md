@@ -25,9 +25,11 @@ h and shift+h to increase and decrease height respectively.
 
 s and shift+s to increase and decrease selection box size respectively.
 
-### visual
+### audiovisual
 
 g to toggle the grid. it starts on by default.
+
+m to toggle sound effects.
 
 ## mechanics
 
