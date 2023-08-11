@@ -14,6 +14,8 @@ ctrl+z to undo.
 
 ctrl+shift+z or ctrl+y to redo.
 
+right arrow to open the menu. arrow keys to use the menu.
+
 ### board manipulation
 esc to reset.
 

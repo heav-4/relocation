@@ -21,6 +21,15 @@ some files
 
     sfx.lua:
         sound effect handling. though other things are responsible for calling it as of now.
+    
+    ui.lua:
+        the sidebar rendering. it's fairly cursed and i really need to clean this code up and maybe restructure it.
+
+    ui_tree.lua:
+        where the actual structure of sidebar settings is contained.
+    
+    settings.lua:
+        all of the settings that one might want to toggle. needed to avoid annoying circular dependencies.
 ---------------------------------
 some decisions you might question
 ---------------------------------

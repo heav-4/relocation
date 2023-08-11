@@ -1,4 +1,6 @@
 local M = {}
+local ui = require("ui")
+local settings = require("settings")
 
 function M.HSL(h, s, l, a) -- not mine.
 	if s<=0 then return l,l,l,a end
@@ -28,9 +30,8 @@ M.wheelpos_offset = (math.log(M.zoom)/math.log(2))*5
 local font_size = (M.tile_size-M.tile_border/2)/2*M.visual_tile_spacing
 M.font = love.graphics.setNewFont(font_size)
 
-M.grid = true
-
 local flash_sine = 0
+local frames = 0
 
 function M.pos_to_tile(mx, my, offset)
     offset = offset or 0
@@ -97,11 +98,17 @@ local function render_tile(t)
     local tile_mx = tile_x + M.tile_size
     local tile_my = tile_y + M.tile_size
     love.graphics.setColor(t.r, t.g, t.b)
+    if settings.shapeonly then
+        local h, s, l = M.HSL((frames/360)%1, 0.7, 0.3)
+        love.graphics.setColor(h, s, l)
+    end
     love.graphics.rectangle("fill", tile_x, tile_y, M.tile_size, M.tile_size)
     love.graphics.setColor(0, 0, 0)
     local text_x = tile_x
     local text_y = tile_y + M.tile_size/2 - M.font:getHeight()/M.visual_tile_spacing/2
-    love.graphics.printf(t.text, text_x, text_y, M.tile_size*M.visual_tile_spacing, "center", 0, 1/M.visual_tile_spacing)
+    if not settings.shapeonly then
+        love.graphics.printf(t.text, text_x, text_y, M.tile_size*M.visual_tile_spacing, "center", 0, 1/M.visual_tile_spacing)
+    end
     love.graphics.setColor(0.5, 0.5, 0.5)
     love.graphics.setLineWidth(M.tile_border)
     love.graphics.polygon("line", tile_x, tile_y, tile_mx, tile_y, tile_mx, tile_my, tile_x, tile_my)
@@ -195,7 +202,6 @@ local function render_valid_moves(world)
     end
 end
 
-local frames = 0
 function M.draw(world)
     local w, h = love.graphics.getDimensions()
     frames = frames + 1
@@ -203,7 +209,7 @@ function M.draw(world)
     zoom_camera_drift()
     love.graphics.push()
     love.graphics.applyTransform(camera_transform())
-    if M.grid then render_grid() end
+    if settings.grid then render_grid() end
     for _, tile in pairs(world.tiles) do
         render_tile(tile)
     end
@@ -211,6 +217,7 @@ function M.draw(world)
     if world.valid_moves then render_valid_moves(world) end
     love.graphics.pop()
     draw_top_text()
+    if ui.is_open then ui.render() end
 end
 
 return M

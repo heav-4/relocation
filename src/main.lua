@@ -1,6 +1,8 @@
 local grid = require("grid")
 local gfx = require("gfx")
 local sfx = require("sfx")
+local ui = require("ui")
+local settings = require("settings")
 
 local world
 local mode_name = "None"
@@ -27,6 +29,7 @@ local function cancel_move()
 end
 
 function love.mousepressed(x, y, button)
+    if ui.blocking_inputs then return end
     local tx, ty = gfx.pos_to_tile(x, y, -(world.sw-1)/2)
     if button == 1 then
         if not world.currently_moving and world:valid_block(tx, ty) then
@@ -57,6 +60,7 @@ function love.mousepressed(x, y, button)
 end
 
 function love.mousemoved(x, y, dx, dy)
+    if ui.blocking_inputs then return end
     x, y = gfx.board_space(x, y)
     dx, dy = dx/gfx.zoom, dy/gfx.zoom
     gfx.zx = x
@@ -68,6 +72,7 @@ function love.mousemoved(x, y, dx, dy)
 end
 
 function love.wheelmoved(x, y)
+    if ui.blocking_inputs then return end
     gfx.wheelpos = math.min(5,math.max(-10, gfx.wheelpos + y))
 end
 
@@ -122,7 +127,8 @@ local function redo()
     gfx.text("Move redone")
 end
 
-function love.keypressed(key)
+function love.keypressed(key, ...)
+    if ui.blocking_inputs then return ui.keypressed(key, ...) end
     if key == "escape" then
         init(sw, w, h, "Board reset")
     elseif key == "1" then
@@ -151,24 +157,25 @@ function love.keypressed(key)
         if love.keyboard.isDown("lshift") then redo() else undo() end
     elseif key == "y" and love.keyboard.isDown("lctrl") then
         redo()
-    elseif key == "right" then gfx.cx = gfx.cx + 50
-    elseif key == "left" then gfx.cx = gfx.cx - 50
     elseif key == "g" then
         if gfx.grid then
             gfx.text("Grid disabled")
-            gfx.grid = false
+            settings.grid = false
         else
             gfx.text("Grid enabled")
-            gfx.grid = true
+            settings.grid = true
         end
     elseif key == "m" then
         if sfx.mute then
             gfx.text("Disabled silence")
-            sfx.mute = false
+            settings.mute = false
         else
             gfx.text("Disabled sound effects")
-            sfx.mute = true
+            settings.mute = true
         end
+    elseif key == "right" then
+        sfx.play("open", 0.7)
+        ui.open()
     end
 end
 

@@ -34,3 +34,8 @@
     + there are sound effects now.
     : fixed the issue in which even parity selection size piece previews didn't flash in some cases. 
     : wow, a 2 at the end of the version number? incredible. unprecedented.
+
+1.6.0 (2023-08-11)
+------------------
+    + a UI. quite a big change.
+    + shape-only mode, using the UI.
