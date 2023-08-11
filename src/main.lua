@@ -158,7 +158,7 @@ function love.keypressed(key, ...)
     elseif key == "y" and love.keyboard.isDown("lctrl") then
         redo()
     elseif key == "g" then
-        if gfx.grid then
+        if settings.grid then
             gfx.text("Grid disabled")
             settings.grid = false
         else
@@ -166,7 +166,7 @@ function love.keypressed(key, ...)
             settings.grid = true
         end
     elseif key == "m" then
-        if sfx.mute then
+        if settings.mute then
             gfx.text("Disabled silence")
             settings.mute = false
         else
