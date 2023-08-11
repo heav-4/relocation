@@ -39,3 +39,7 @@
 ------------------
     + a UI. quite a big change.
     + shape-only mode, using the UI.
+
+1.6.1 (2023-08-11)
+------------------
+    : fixed the issue in which you couldn't toggle the grid or sounds.
