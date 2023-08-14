@@ -10,7 +10,7 @@ local function init(s, w, h, msg)
     world = grid.new(s)
     world:init(w, h)
     mode_name = w.."x"..h.."+"..s
-    gfx.text(msg.."\n".."Mode: "..mode_name)
+    if msg then gfx.text(msg.."\n".."Mode: "..mode_name) end
     love.window.setTitle("Relocation ("..mode_name..")")
 end
 
@@ -177,6 +177,43 @@ function love.keypressed(key, ...)
         sfx.play("open", 0.7)
         ui.open()
     end
+end
+
+do
+    local node = require("ui_tree")
+    local ut = require("ui_tree_structure")
+    local root = node("Relocation")
+    local ps = root:add("Primary settings")
+        ps:add_interactive(function(context)
+            if context == "activate" then settings.mute = not settings.mute end
+            return "Sound: "..(settings.mute and "OFF" or "ON")
+        end)
+        ps:add_interactive(function(context)
+            if context == "activate" then settings.grid = not settings.grid end
+            return "Grid: "..(settings.grid and "ON" or "OFF")
+        end)
+        ps:add_interactive(function(context)
+            if context == "activate" then settings.shapeonly = not settings.shapeonly end
+            return "Shape only: "..(settings.shapeonly and "ON" or "OFF")
+        end)
+    local scrambles = root:add("Scrambles")
+        scrambles:add_interactive(function(context)
+            if context ~= "activate" then return "Scramble randomly" end
+            init(sw, w, h, "Board scrambled randomly")
+            world:scramble()
+        end)
+        scrambles:add_interactive(function(context)
+            if context ~= "activate" then return "Scramble (even permutation)" end
+            init(sw, w, h, "Board scrambled to an even permutation")
+            world:scramble(0)
+        end)
+        scrambles:add_interactive(function(context)
+            if context ~= "activate" then return "Scramble (odd permutation)" end
+            init(sw, w, h, "Board scrambled to an odd permutation")
+            world:scramble(1)
+        end)
+    root:add_interactive(function() return "Clicky sound" end)
+    ut.root = root
 end
 
 gfx.text("Loading audio...")

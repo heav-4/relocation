@@ -30,26 +30,4 @@ function mt:get_name()
     return self.name("identify")
 end
 
-local settings = require("settings")
-
--- tree definition starts here, --
-
-local root = node("Relocation")
-local ps = root:add("Primary settings")
-ps:add_interactive(function(context)
-    if context == "activate" then settings.mute = not settings.mute end
-    return "Sound: "..(settings.mute and "OFF" or "ON")
-end)
-ps:add_interactive(function(context)
-    if context == "activate" then settings.grid = not settings.grid end
-    return "Grid: "..(settings.grid and "ON" or "OFF")
-end)
-ps:add_interactive(function(context)
-    if context == "activate" then settings.shapeonly = not settings.shapeonly end
-    return "Shape only: "..(settings.shapeonly and "ON" or "OFF")
-end)
-root:add_interactive(function() return "Clicky sound" end)
-
--- and ends here. --
-
-return root
+return node

@@ -1,5 +1,5 @@
 local M = {}
-local ut = require("ui_tree")
+local ut = require("ui_tree_structure")
 local sfx = require("sfx")
 M.is_open = false
 M.blocking_inputs = false
@@ -25,7 +25,7 @@ end
 
 local function sidepanel_width()
     local w, h = love.graphics.getDimensions()
-    return math.max(200, w/8)
+    return math.max(300, w/8)
 end
 
 local function text_x()
@@ -68,9 +68,9 @@ local function draw_sidepanel()
     love.graphics.rectangle("fill", 0, 0, sp_w, text_x()*2 + 1*text_h())
     love.graphics.setColor(0.2, 0.2, 0.4, 1)
     love.graphics.rectangle("fill", 0, text_y(M.selected+1), sp_w, text_h())
-    draw_text(M.tree.name, 0)
-    if M.tree.elems then for i=1, #M.tree.elems do
-        local elem = M.tree.elems[i]
+    draw_text(M.tree.root.name, 0)
+    if M.tree.root.elems then for i=1, #M.tree.root.elems do
+        local elem = M.tree.root.elems[i]
         draw_text(elem:get_name(), i+1, elem.dropdown)
     end end
 end
@@ -89,36 +89,36 @@ function M.render()
 end
 
 local function select(n)
-    if M.tree.elems and #M.tree.elems > 0 then
-        n = ((n-1)%#M.tree.elems)+1
+    if M.tree.root.elems and #M.tree.root.elems > 0 then
+        n = ((n-1)%#M.tree.root.elems)+1
         M.selected = n
     end
 end
 
 function M.enter(node)
-    M.tree.selected = M.selected
+    M.tree.root.selected = M.selected
     if not node.selected then
         M.selected = 1
     else
         M.selected = node.selected
     end
-    M.tree = node
+    M.tree.root = node
 end
 
 function M.keypressed(key)
     if key == "left" then
         sfx.play("undo", 0.5)
-        if not M.tree.parent then
+        if not M.tree.root.parent then
             M.close()
         else
-            M.enter(M.tree.parent)
+            M.enter(M.tree.root.parent)
         end
-    elseif key == "right" and M.tree.elems[M.selected] then
-        if M.tree.elems[M.selected].dropdown then
+    elseif key == "right" and M.tree.root.elems[M.selected] then
+        if M.tree.root.elems[M.selected].dropdown then
             sfx.play("place")
-            M.enter(M.tree.elems[M.selected])
-        elseif M.tree.elems[M.selected].interactive then
-            M.tree.elems[M.selected].name("activate")
+            M.enter(M.tree.root.elems[M.selected])
+        elseif M.tree.root.elems[M.selected].interactive then
+            M.tree.root.elems[M.selected].name("activate")
             sfx.play("swap")
         end
     elseif key == "up" then

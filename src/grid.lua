@@ -14,7 +14,7 @@ end
 
 -- 1d index to 2d coordinates
 function M.n_xy(n, w, h)
-    return n%w, math.floor(n/h)
+    return n%w, math.floor(n/w)
 end
 -- vice versa.
 function M.xy_n(x, y, w)
@@ -158,6 +158,34 @@ function M:init(w, h)
             local r, g, b = gfx.HSL(h, s, l)
             self.tiles[cx.." "..cy] = self:tile_object(cx, cy, tilename, {r, g, b})
         end
+    end
+end
+function M:scramble(require_parity)
+    local left, top, right, bottom = self:bounding_box()
+    local w, h = right-left+1, bottom-top+1
+    local size = w*h
+    local parity = 0
+    local function swap(n, m)
+        local x1, y1 = M.n_xy(n, w, h)
+        local x2, y2 = M.n_xy(m, w, h)
+        x1, y1 = x1-math.floor(w/2), y1-math.floor(h/2)
+        x2, y2 = x2-math.floor(w/2), y2-math.floor(h/2)
+        local t1 = self:get(x1, y1)
+        local t2 = self:get(x2, y2)
+        self.tiles[x1.." "..y1] = t2
+        self.tiles[x2.." "..y2] = t1
+        t1.x, t1.y = x2, y2
+        t2.x, t2.y = x1, y1
+    end
+    for i=0, size-2 do
+        local swap_with = math.random(i, size-1)
+        if swap_with ~= i then
+            parity = 1-parity
+            swap(i, swap_with)
+        end
+    end
+    if require_parity and parity ~= require_parity then
+        swap(size-1, 0)
     end
 end
 
