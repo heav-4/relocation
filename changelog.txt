@@ -43,3 +43,7 @@
 1.6.1 (2023-08-11)
 ------------------
     : fixed the issue in which you couldn't toggle the grid or sounds.
+
+1.6.2 (2023-08-14)
+------------------
+    + scrambling. NOT guaranteed possible always. beware.
